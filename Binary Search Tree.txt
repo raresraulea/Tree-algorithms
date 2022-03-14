@@ -1,0 +1,199 @@
+
+#include <iostream>
+#include <algorithm>
+#include <vector>
+#include <queue>
+#define GENERIC template <class T>
+
+using namespace std;
+
+GENERIC struct nod
+{
+	T data;
+	nod<T>* left;
+	nod<T>* right;
+};
+
+GENERIC void insert(nod<T>* &root, T key)
+{
+	if (root == NULL)
+	{
+		nod<T>* newNode = new nod();
+		newNode->data = key;
+		root = newNode;
+	}
+	else
+	{
+		if (key < root->data)
+			insert(root->left, key);
+		else if (key > root->data)
+			insert(root->right, key);
+		else cout << "[ALERT]: Cheie deja in arbore!" << endl;
+	}
+}
+GENERIC int getHeight(nod<T>* root)
+{
+	if (root == NULL) return -1;
+	return max(getHeight(root->left), getHeight(root->right)) + 1;
+}
+GENERIC void traversare_preordine(nod<T>* root)
+{
+	if (root == NULL) return;
+	cout << root->data << ' ';
+	traversare_inordine(root->left);
+	traversare_inordine(root->right);
+}
+GENERIC
+void traversare_inordine(nod<T>* root)
+{
+	if (root == NULL) return;
+	traversare_inordine(root->left);
+	cout << root->data << ' ';
+	traversare_inordine(root->right);
+}
+GENERIC 
+void traversare_postordine(nod<T>* root)
+{
+	if (root == NULL) return;
+	taversare_inordine(root->left);
+	traversare_inordine(root->right);
+	cout << root->data << ' ';
+}
+GENERIC 
+bool cauta(nod<T>* root, T key)
+{
+	if (root == NULL) return false;
+	if (root->data == key) return true;
+	else if (root->data < key) cauta(root->right, key);
+	else cauta(root->left, key);
+}
+GENERIC T find_min(nod<T>* root)
+{
+	if (root->left == NULL) return root->data;
+	else return find_min(root->left);
+}
+GENERIC T find_max(nod<T>* root)
+{
+	if (root->right == NULL) return root->data;
+	else return find_max(root->right);
+}
+GENERIC void delete_node(nod<T>*& root, T val)
+{
+	if (root == NULL)
+	{
+		cout << "Nodul nu se afla in arbore!" << endl;
+		return;
+	}
+	else
+	{
+		if (val > root->data)
+			delete_node(root->right, val);
+		else if (val < root->data)
+			delete_node(root->left, val);
+		//valoarea a fost gasita        
+		else
+		{
+			//daca e nod frunza
+			if (root->left == NULL && root->right == NULL)
+			{
+				delete root;
+				root = NULL;
+				return;
+			}
+			//daca lipseste subarborele stang
+			if (!root->left && root->right)
+			{
+				nod<T>* temp = root->right;
+				delete root;
+				root = temp;
+			}
+			//lipseste subarborele drept
+			else if (root->left && !root->right)
+			{
+				nod<T>* temp = root->left;
+				delete root;
+				root = temp;
+			}
+			//ambii subarbori prezenti
+			else if (!root->left && !root->right)
+			{
+				int min_val_rsubtree = find_min(root->right);
+				root->data = min_val_rsubtree;
+				delete_node(root->right, min_val_rsubtree);
+			}
+
+		}
+	}
+}
+//FUNCTIE DE VERIFICARE DACA UN ARBORE BINAR ESTE ARBORE BINAR DE CAUTARE SAU NU
+GENERIC bool isBSTUtil(nod<T>* root, T minValue, T maxValue)
+{
+	if (root == NULL) return true;
+	if (root->data > minValue && root->data < maxValue
+		&& isBSTUtil(root->left, minValue, root->data)
+		&& isBSTUtil(root->right, root->data, maxValue)
+		) return true;
+	else return false;
+}
+
+GENERIC bool isBinarySearchTree(nod<T>* root)
+{
+	return isBSTUtil(root, INT_MIN, INT_MAX);
+}
+//functie de cautare care returneaza adresa nodului sau NULL daca nu este in arbore
+GENERIC nod<T>* find_address(nod<T>* root, T data)
+{
+	if (root == NULL || data == root->data) return root;
+	if (data > root->data) return find_address(root->right, data);
+	else return find_address(root->left, data);
+	return NULL;
+}
+GENERIC nod<T>* find_address_min(nod<T>* root)
+{
+	if (root == NULL) return root;
+	while (root->left) root = root->left;
+	return root;
+  }
+//FUNCTIE PENTRU DETERMINAREA SUCCESORULUI UNEI CHEI IN ABC
+GENERIC nod<T>* succesor(nod<T>* root, T data)
+{
+	if (root == NULL) return root;
+	nod<T>* myNode = find_address(root, data);
+	if (myNode->right)
+		return find_address_min(myNode->right);
+	else
+	{
+		nod<T>* newTraversal = root; //iterator pentru o noua parcurgere a drumului catre nod
+		nod<T>* result = NULL; //nodul cel mai adanc care e mai mare decat cel pentru care cautam succesorul
+							   //adica nodul cel mai adanc care inca are in subarborele stang 
+		while (newTraversal != myNode)
+		{
+			if (newTraversal->data < myNode->data) newTraversal = newTraversal->right;
+			else if (root->data > myNode->data)
+			{
+				result == newTraversal;
+				newTraversal = newTraversal->left;
+			}
+		}
+		return result;
+	}
+}
+
+//verificare echilibrat
+GENERIC bool balanced(nod<T>* root)
+{
+	if (root == NULL) return true;
+	else
+	{
+		int left_height = getHeight(root->left);
+		int right_height = getHeight(root->right);
+		if (abs(left_height - right_height) > 1) return false;
+		return balanced(root->right) && balanced(root->left);
+	}
+}
+
+int main()
+{
+	nod<int>* root = NULL; 
+}
+

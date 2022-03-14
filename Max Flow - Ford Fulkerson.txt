@@ -1,0 +1,106 @@
+
+#include <iostream>
+#include <fstream>
+#include <queue>
+#include <vector>
+#include <algorithm>
+#define NMAX 51
+
+using namespace std; \
+
+int N = 6; //numarul de noduri numerotate 0->N-1
+
+ifstream fin("Text.txt");
+
+bool findPathWithDFS(int** rGraph, int src, int dest, int* parent)
+{
+    queue <int> q;
+    
+    bool* visited = new bool[N];
+    for (int nod = 0; nod < N; nod++)
+        visited[nod] = false;
+
+    q.push(src);
+    visited[src] = true;
+    parent[src] = -1;
+
+    while (!q.empty())
+    {
+        int u = q.front();
+        q.pop();
+
+        for (int v = 0; v < N; v++)
+            if (!visited[v] && rGraph[u][v] > 0)
+                parent[v] = u, q.push(v), visited[v] = true;
+    }
+    
+    //daca am ajuns din src in dest cu bfs => true, altfel false
+    return visited[dest];
+}
+int fordFulkerson(int** graph, int s, int t)
+{
+    int u, v;
+    //initializare graf rezidual
+    int** rGraph = new int* [N];
+    for (int row = 0; row < N; row++)
+    {
+        rGraph[row] = new int[N];
+        for (int col = 0; col < N; col++)
+            rGraph[row][col] =  graph[row][col];
+    }
+
+    //array pentru gasirea path-urilor intre src si dest prin BFS
+    int* parent = new int[N];
+    
+    int result_maxFlow = 0;
+
+    while (findPathWithDFS(rGraph, s, t, parent))
+    {
+        //cautare flux actual prin drumul creat de DFS ca flux minim permis 
+        //de capacitatea cel putin uneia dintre muchii
+        int current_flow = INT_MAX;
+        for (v = t; v != s; v = parent[v])
+        {
+             u = parent[v];
+            current_flow = min(rGraph[u][v], current_flow);
+        }
+
+        //actualizare fluxuri in sensul "pozitiv", "consumand" din capacitatea initiala fluxul curent
+        //si adaugarea in sens contrar a unui posibil drum de intoarcere mai eficient
+        for ( v = t; v != s; v = parent[v])
+        {
+             u = parent[v];
+            rGraph[u][v] -= current_flow;
+            rGraph[v][u] += current_flow;
+        }
+
+        result_maxFlow += current_flow;
+    }
+
+    return result_maxFlow;
+}
+
+
+int main()
+{
+    //graf reprezentat prin matrice de adiacenta alocata dinamic (array de array-uri)
+    int** graph = new int* [N];
+    for (int row = 0; row < N; row++)
+    {
+        graph[row] = new int[N];
+        for (int col = 0; col < N; col++)
+            fin >> graph[row][col];
+    }
+    /*TEST MATRICE ADIACENTA
+    for (int i = 0; i < N; i++)
+    {
+        for (int j = 0; j < N; j++)
+        {
+            cout.width(3);
+            cout << graph[i][j] << ' ';
+        }
+        cout << endl;
+    }*/
+    cout << "Fluxul maxim este: " <<  fordFulkerson(graph, 0, 5);
+}
+

@@ -1,0 +1,105 @@
+
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <ctime>
+#include <cstdlib>
+#include <algorithm>
+#define NMAX 101
+
+using namespace std;
+
+template <class T>
+struct node
+{
+	T data;
+	node<T>* left;
+	node<T>* right;
+};
+
+template <class T>
+struct BinaryTree
+{
+	node<T>* root;
+	int* ud; //ultima directie generata pentru fiecare nod -> pastrez arborele echilibrat 
+
+	//constructor cand nu cunosc numarul de noduri
+	BinaryTree()
+	{
+		root = NULL;
+		ud = new int[NMAX];
+		for (int i = 1; i < NMAX; i++)
+		{
+			ud[i] = 0;
+		}
+	}
+	//constructor pentru cand cunosc numarul de noduri => economie memorie la tabloul de directii
+	BinaryTree(int nrNoduri)
+	{
+		root = NULL;
+		ud = new int[nrNoduri];
+		for (int i = 1; i < nrNoduri + 1; i++)
+			ud[i] = 0;
+	}
+	//functie de inserare astfel incat arborele construit sa ramana echilibrat
+	void insert(node<T>*& root, T val)
+	{
+		if (root == NULL)
+		{
+			node<T>* nodeToInsert = new node<T>();
+			nodeToInsert->data = val;
+			root = nodeToInsert;
+
+		}
+		else
+		{
+			if (ud[root->data] % 2 == 0)
+			{
+				ud[root->data]++;
+				cout << root->data << " ->stanga" << endl;
+				insert(root->left, val);
+			}
+			else
+			{
+				ud[root->data]++;
+				cout << root->data << " -> dreapta" << endl;
+				insert(root->right, val);
+			}
+		}
+	}
+	int findHeight(node<T>* root)
+	{
+		if (root == NULL)
+			return 0;
+		else return 1 + max(findHeight(root->left), findHeight(root->right));
+	}
+	int findDiameter(node<T>* root)
+	{
+		if (root == NULL)
+			return 0;
+		
+		int left_height = findHeight(root->left);
+		int left_diam = findDiameter(root->left);
+
+		int right_height = findHeight(root->right);
+		int right_diam = findDiameter(root->right);
+
+		return max(left_height + right_height + 1, max(left_diam, right_diam));
+		
+	}
+};
+
+int main()
+{
+	BinaryTree<int>* BT = new BinaryTree<int>();
+	srand(time(NULL));
+	int noduri = 10;
+	for (int x{}; x < noduri; x++)
+	{
+		cout << "Inserez " << x + 1 << endl;
+		BT->insert(BT->root, x + 1);
+	}
+
+	cout << BT->findDiameter(BT->root);
+}
+

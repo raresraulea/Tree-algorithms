@@ -1,0 +1,128 @@
+//IDEE PENTRU DETERMINAREA ARBORELUI DE COST MINIM AL UNUI GRAF UNDE NUMARUL MUCHIILOR SE APROPIE DE N*N:
+//ALEGEREA LA FIECARE PAS A NODULUI POTRIVIT PENTRU CONSTRUIREA ARBORELUI - ALGORITM GREEDY
+//
+//bool MST - SET[] - MULTIMEA NODURILOR CARE AU FOST INTRODUSE IN ARBORE (TRUE - este in arbore, FALSE - nu este)
+//int KEY[] - COSTUL ACTUAL AL FIECARUI NOD (INITIAL INFINIT PENTRU TOATE)
+//
+//ETAPA 1: 
+//INITIALIZAREA COSTURILOR(KEY) PE INFINIT
+//INITIALIZAREA mstSet FALSE(INITIAL NICIUN NOD NU SE AFLA IN ARBORE)
+//COSTUL PENTRU NODUL 1 ESTE SETAT PE 0 PENTRU A FI ALES PRIMUL 
+//DECLARAREA UNUI VECTOR DE TATI SI SETAREA TATALUI PRIMULUI NOD (1) CA -1 PENTRU A FI RADACINA ARBORELUI
+//
+//ETAPA 2 REPETITIVA: 
+//SE ALEGE NODUL CU CEL MAI MIC COST CARE NU A FOST INTRODUS IN ABORE (MST_SET-FALSE)
+//SE EFECTUEAZA O OPERATIE DE RELAXARE A COSTURILOR PENTRU TOATE NODURILE ADIACENTE A NODULUI SELECTAT
+//	-se verifica daca costul muchiei pe care o formeaza cu nodul selectat este mai mica decat costul actual (KEY)
+//	-daca da, se actualizeaza costul in key si se seteaza parintele nodului adiacent ca fiind nodul selectat
+//PANA CAND TOATE NODURILE AU FOST SELECTATE (N PASI, UNDE N = NUMARUL DE NODURI)
+//
+//
+
+
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+int N, M;
+
+ifstream fin("graf.in");
+
+struct muchie
+{
+	int v1, v2, cost;
+};
+
+void read(vector<pair<int, int>>* lma)
+{
+	int x, y, c;
+	while (fin >> x >> y >> c)
+	{
+		lma[x].emplace_back(y, c);
+		lma[y].emplace_back(x, c);
+	}
+}
+
+//FUNCTIE CARE RETURNEAZA NODUL CU COSTUL MINIM CARE NU SE AFLA IN MST_SET
+int nod_min_key(bool* mstSet, int* key)
+{
+	int index_min = 0;
+	int min = INT_MAX; 
+	for (int i = 1; i <= N; i++)
+		if (key[i] < min && mstSet[i] == false)
+			index_min = i, min = key[i];
+	return index_min;
+}
+//FUNCTIE CARE SA TRANSFORME TABLOUL DE TATI INTR-UN VECTOR DE MUCHII CU COSTURI
+vector<muchie> arrayToVector(vector<pair<int, int>>* lma, int* parent)
+{
+	vector <muchie> APM;
+	for (int i = 1; i <= N; i++)
+	{
+		muchie temp;
+		temp.v1 = i;
+		temp.v2 = parent[i];
+		temp.cost = lma[i][parent[i]].second;
+		APM.push_back(temp);
+	}
+	return APM;
+}
+//vector<muchie> alg_Prim(vector<pair<int, int>>* lma) // antetul pentru returnare vector de muchii
+int* alg_Prim(vector<pair<int, int>>* lma)
+{
+	bool* mstSet = new bool[N + 2];
+	int* key = new int[N + 2];
+	for (int i = 1; i <= N; i++)
+		mstSet[i] = false, key[i] = INT_MAX;
+
+	int* parent = new int[N + 2];
+
+	parent[1] = -1; //primul nod il consider mereu radacina arborelui de cost minim
+	key[1] = 0; //setez distanta primului nod pe 0 ca sa fie ales primul de functia nod_min_key
+
+	#define cost second
+	#define propriu_zis first
+
+	for (int alege_nod = 1; alege_nod <= N; alege_nod++)
+	{
+		int u = nod_min_key(mstSet, key);
+		
+		mstSet[u] = true;
+
+		for (auto nod_adiacent : lma[u])
+			if (nod_adiacent.cost < key[nod_adiacent.propriu_zis] && !mstSet[nod_adiacent.first])
+				key[nod_adiacent.propriu_zis] = nod_adiacent.cost, parent[nod_adiacent.propriu_zis] = u;
+	}
+
+	//return arrayToVector(lma, parent);
+
+	//afisare vector de tati
+	/*for (int i = 1; i <= N; i++)
+	{
+		cout << i << ' ' << parent[i] << endl;
+	}*/
+	return parent;
+}
+
+int main()
+{
+	fin >> N >> M;
+	vector<pair<int, int>>* lma = new vector<pair<int, int>>[N + 1];
+	read(lma);
+	int* parent = alg_Prim(lma);
+	/*AFISARE LISTE ADIACENTA CU COSTURI
+	
+	for (int i = 1; i <= N; i++)
+	{
+		cout << i << ": \n";
+		for (auto x : lma[i])
+			cout << x.first << ' ' << x.second << endl;
+	}
+	cout << endl;*/
+	
+
+}
+
