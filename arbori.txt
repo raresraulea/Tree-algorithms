@@ -1,0 +1,205 @@
+package arbori;
+
+public class BinaryTree {
+  Node root=null;
+
+  public BinaryTree() {
+    insert(new Node(7));
+    insert(new Node(1));
+    insert(new Node(5));
+  }
+
+  public void insert(Node z)
+  {
+    Node y=null;
+    Node x=root;
+    while(x!=null)
+    {
+      y=x;
+      if(z.key<x.key)
+        x=x.leftChild;
+      else
+        x=x.rightChild;
+    }
+    z.parent=y;
+    if(y==null)
+      root=z;
+    else
+      if(z.key<y.key)
+        y.leftChild=z;
+      else
+        y.rightChild=z;
+    }
+
+  public static void inordine(Node x)
+  {
+    if(x!=null)
+    {
+      inordine(x.leftChild);
+      System.out.print(x.key+" ");
+      inordine(x.rightChild);
+    }
+  }
+
+  public static void preordine(Node x)
+  {
+    if(x!=null)
+    {
+      System.out.print(x.key + " ");
+      preordine(x.leftChild);
+      preordine(x.rightChild);
+    }
+
+  }
+
+  public static void postordine(Node x)
+{
+  if(x!=null)
+  {
+
+    postordine(x.leftChild);
+    postordine(x.rightChild);
+    System.out.print(x.key + " ");
+  }
+
+}
+
+public static Node cautrec(Node x,int k)
+{
+  if(x==null||k==x.key)
+  {
+    return x;
+  }
+  if(k<x.key)
+    return cautrec(x.leftChild,k);
+  return cautrec(x.rightChild,k);
+}
+
+public static Node cautiter(Node x,int k)
+{
+  while(x!=null&&k!=x.key)
+  {
+    if(k<x.key)
+      x=x.leftChild;
+    else
+      x=x.rightChild;
+  }
+  return x;
+}
+
+public static Node min(Node x)
+{
+  while(x.leftChild!=null)
+    x=x.leftChild;
+  return x;
+}
+
+public static Node max(Node x)
+{
+  while(x.rightChild!=null)
+    x=x.rightChild;
+  return x;
+}
+
+public static Node succesor(Node x)
+{
+  if(x.rightChild!=null)
+    return min(x.rightChild);
+  Node y=x.parent;
+  while(y!=null&&x==y.rightChild)
+  {
+    x=y;
+    y=y.parent;
+  }
+  return y;
+}
+
+public  Node sterge(Node z){
+  Node y,x;
+  if(z.leftChild==null || z.rightChild==null)
+    y=z;
+  else
+    y=succesor(z);
+  if(y.leftChild!=null)
+    x=y.leftChild;
+  else
+    x=y.rightChild;
+  if(x!=null)
+    x.parent=y.parent;
+  if(y.parent==null)
+    root=x;
+  else
+     if(y==y.parent.leftChild)
+       y.parent.leftChild=x;
+     else
+       y.parent.rightChild=x;
+  if(y!=z)
+    z.key=y.key;
+  return y;
+}
+
+  public static void main(String[] args) {
+    BinaryTree binaryTree1 = new BinaryTree();
+
+    inordine(binaryTree1.root);
+    System.out.println();
+    preordine(binaryTree1.root);
+    System.out.println();
+    postordine(binaryTree1.root);
+    System.out.println();
+    if (cautrec(binaryTree1.root, 4) != null)
+      System.out.println("gasit " + cautrec(binaryTree1.root, 5).key);
+    else
+      System.out.println("negasit");
+    if (cautiter(binaryTree1.root, 5) != null)
+      System.out.println("gasit " + cautiter(binaryTree1.root, 5).key);
+    else
+      System.out.println("negasit");
+    System.out.println("maximul este " + max(binaryTree1.root).key);
+    System.out.println("minimul este " + min(binaryTree1.root).key);
+    Node x = binaryTree1.root;
+    if (succesor(x) != null)
+      System.out.println("succesorul este " +
+                         succesor(binaryTree1.root.leftChild).key);
+    else
+      System.out.println(x.key + " nu are succesor ");
+      int nod=2;
+    if(cautrec(binaryTree1.root,nod)!=null)
+       binaryTree1.sterge(cautrec(binaryTree1.root, nod));
+    else
+      System.out.println("n-am ce sterge");
+    preordine(binaryTree1.root);
+
+
+
+  }
+
+}
+
+
+
+
+
+package arbori;
+
+/**
+ * <p>Title: </p>
+ * <p>Description: </p>
+ * <p>Copyright: Copyright (c) 2012</p>
+ * <p>Company: </p>
+ * @author not attributable
+ * @version 1.0
+ */
+
+public class Node {
+  int key;
+  float data;
+  Node leftChild;
+  Node rightChild;
+  Node parent;
+
+  public Node(int k){
+    key = k;
+  }
+
+}
